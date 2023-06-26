@@ -1,9 +1,7 @@
 from wsgiref.simple_server import make_server
 
-from urls import routes
-
 from mindl_framework import Application
-from urls import fronts
+from urls import fronts, routes
 
 app = Application(routes=routes, fronts=fronts)
 

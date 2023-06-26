@@ -1,3 +1,4 @@
+from .requests_utils import get_get_params, get_post_params
 from .templator import render
 
 
@@ -10,12 +11,24 @@ class Application:
         path = environ['PATH_INFO']
         path = path if path[-1] == '/' else path + '/'
 
+        request = {}
+
+        method = environ['REQUEST_METHOD']
+
+        if method == 'POST':
+            data = get_post_params(environ)
+
+        if method == 'GET':
+            data = get_get_params(environ)
+
+        request['data'] = data
+        print(request['data'])
+
         if path in self.routes:
             view = self.routes[path]
         else:
             view = PageNotFound()
 
-        request = {}
         for front in self.fronts:
             front(request)
 

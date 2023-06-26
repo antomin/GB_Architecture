@@ -19,8 +19,9 @@
         </div>
         <div id="menubar">
             <ul id="menu">
-                <li class="selected"><a href="/">Home</a></li>
+                <li><a href="/">Home</a></li>
                 <li><a href="/about/">О нас</a></li>
+                <li class="selected"><a href="/contact/">Контакты</a></li>
             </ul>
         </div>
     </div>
@@ -55,11 +56,30 @@
         {#            </form>#}
         {#        </div>#}
         <div id="content">
-            <h1>О нас</h1>
-            <p>Философский вопрос...</p>
-            <p>Сегодня: <b>{{ date }}</b></p>
-            <p>Время: <b>{{ time }}</b></p>
-            <p>Ваша операционная система: <b>{{ os }}</b></p>
+            <h1>Свяжитесь с нами:</h1>
+            <p>Below is an example of how a contact form might look with this template:</p>
+            <form action="#" method="post">
+                <div class="form_settings">
+                    <p>
+                        <label>Ваше имя:
+                            <input class="contact" type="text" name="name" value=""/>
+                        </label>
+                    </p>
+                    <p>
+                        <label>Ваш email:
+                            <input class="contact" type="text" name="email" value=""/>
+                        </label>
+                    </p>
+                    <p>
+                        <label>Сообщение:
+                            <textarea class="contact textarea" rows="8" cols="50" name="message"></textarea>
+                        </label>
+                    </p>
+                    <p style="padding-top: 15px">
+                        <span>&nbsp;</span><input class="submit" type="submit"/>
+                    </p>
+                </div>
+            </form>
         </div>
     </div>
     <div id="footer">

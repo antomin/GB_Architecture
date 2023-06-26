@@ -1,6 +1,7 @@
-from views import Index, About
 from datetime import datetime
 from platform import platform
+
+from views import About, Index, Contact
 
 
 def add_datetime_to_context(request):
@@ -14,7 +15,8 @@ def add_os_to_context(request):
 
 routes = {
     '/': Index(),
-    '/about/': About()
+    '/about/': About(),
+    '/contact/': Contact()
 }
 
 fronts = [add_datetime_to_context, add_os_to_context]

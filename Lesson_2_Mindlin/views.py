@@ -9,3 +9,8 @@ class Index(BaseView):
 class About(BaseView):
     template_name = 'about.html'
     extra_context = {'title': 'О нас'}
+
+
+class Contact(BaseView):
+    template_name = 'contact.html'
+    extra_context = {'title': 'Контакты'}
