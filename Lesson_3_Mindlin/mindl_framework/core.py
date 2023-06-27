@@ -12,6 +12,7 @@ class Application:
         path = path if path[-1] == '/' else path + '/'
 
         request = {}
+        data = {}
 
         method = environ['REQUEST_METHOD']
 
