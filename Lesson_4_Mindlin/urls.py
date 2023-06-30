@@ -1,7 +1,7 @@
 from datetime import datetime
 from platform import platform
 
-from views import About, Index, Contact
+from views import About, Contact, Index, CategoryList, CategoryCreate, ItemCreate, ItemList, ItemCopy
 
 
 def add_datetime_to_context(request):
@@ -16,7 +16,15 @@ def add_os_to_context(request):
 routes = {
     '/': Index(),
     '/about/': About(),
-    '/contact/': Contact()
+    '/contact/': Contact(),
+    '/categories/': CategoryList(),
+    '/category/create/': CategoryCreate(),
+    '/items/': ItemList(),
+    '/create-item/': ItemCreate(),
+    '/copy-item/': ItemCopy()
 }
 
-fronts = [add_datetime_to_context, add_os_to_context]
+fronts = [
+    add_datetime_to_context,
+    add_os_to_context
+]

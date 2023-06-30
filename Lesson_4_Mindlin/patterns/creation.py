@@ -43,7 +43,7 @@ class Item(ItemPrototype):
         self.title = title
         self.category = category
 
-        self.category.courses.append(self)
+        self.category.items.append(self)
         Item.current_id += 1
 
 

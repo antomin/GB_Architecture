@@ -1,0 +1,14 @@
+{% extends '_base.html' %}
+
+{% block title %}{{ title }}{% endblock title %}
+
+{% block content %}
+    <a href="/category/create/">+ Создать категорию</a>
+    <h2>Категории:</h2>
+    <ul>
+        {% for category in categories %}
+            <li><a href="/items/?cat_id={{ category.id }}">{{ category.name }}</a></li>
+            <a href="/create-item/?cat_id={{category.id}}">+ товар</a>
+        {% endfor %}
+    </ul>
+{% endblock content %}

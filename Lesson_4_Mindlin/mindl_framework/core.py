@@ -16,6 +16,8 @@ class Application:
 
         method = environ['REQUEST_METHOD']
 
+        request['method'] = method
+
         if method == 'POST':
             data = get_post_params(environ)
 
@@ -23,7 +25,6 @@ class Application:
             data = get_get_params(environ)
 
         request['data'] = data
-        print(request['data'])
 
         if path in self.routes:
             view = self.routes[path]
