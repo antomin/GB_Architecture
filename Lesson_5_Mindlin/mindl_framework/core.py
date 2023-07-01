@@ -1,10 +1,12 @@
 from .requests_utils import get_get_params, get_post_params
 from .templator import render
+from .route import AppRoute
+from .utils import debug
 
 
 class Application:
-    def __init__(self, routes, fronts):
-        self.routes = routes
+    def __init__(self, fronts):
+        self.routes = AppRoute.routes
         self.fronts = fronts
 
     def __call__(self, environ, start_response):
@@ -46,11 +48,13 @@ class BaseView:
     template_folder = 'templates'
     extra_context = {}
 
+    @debug
     def __call__(self, request):
         context = {**request, **self.extra_context}
         return '200 OK', render(self.template_name, folder=self.template_folder, context=context)
 
 
 class PageNotFound:
+    @debug
     def __call__(self, request):
         return '404 NOT FOUND', '<h1>Page not found</h1>'

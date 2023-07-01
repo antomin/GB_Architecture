@@ -13,16 +13,16 @@ def add_os_to_context(request):
     request['os'] = platform()
 
 
-routes = {
-    '/': Index(),
-    '/about/': About(),
-    '/contact/': Contact(),
-    '/categories/': CategoryList(),
-    '/category/create/': CategoryCreate(),
-    '/items/': ItemList(),
-    '/create-item/': ItemCreate(),
-    '/copy-item/': ItemCopy()
-}
+# routes = {
+#     '/': Index(),
+#     '/about/': About(),
+#     '/contact/': Contact(),
+#     '/categories/': CategoryList(),
+#     '/category/create/': CategoryCreate(),
+#     '/items/': ItemList(),
+#     '/create-item/': ItemCreate(),
+#     '/copy-item/': ItemCopy()
+# }
 
 fronts = [
     add_datetime_to_context,

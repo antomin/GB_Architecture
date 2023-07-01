@@ -1,31 +1,38 @@
+from mindl_framework.utils import debug
 from patterns.creation import Engine, Logger
-from mindl_framework import BaseView, render
+from mindl_framework import BaseView, AppRoute, render
 
 db = Engine()
 logger = Logger()
 
 
+@AppRoute('/')
 class Index(BaseView):
     template_name = 'index.html'
     extra_context = {'title': 'Главная'}
 
 
+@AppRoute('/about/')
 class About(BaseView):
     template_name = 'about.html'
     extra_context = {'title': 'О нас'}
 
 
+@AppRoute('/contact/')
 class Contact(BaseView):
     template_name = 'contact.html'
 
 
+@AppRoute('/categories/')
 class CategoryList(BaseView):
     categories = db.categories
     template_name = 'list_category.html'
     extra_context = {'categories': categories}
 
 
+@AppRoute('/category/create/')
 class CategoryCreate:
+    @debug
     def __call__(self, request):
         if request['method'] == 'POST':
             data = request['data']
@@ -33,14 +40,14 @@ class CategoryCreate:
             db.create_category(name=name)
             logger.log(f'New category {name} added.')
             return '200 OK', render(template_name='list_category.html', context={'categories': db.categories})
-
-
         else:
             context = {'title': 'Создать категорию'}
             return '200 OK', render(template_name='create_category.html', context=context)
 
 
+@AppRoute('/items/')
 class ItemList:
+    @debug
     def __call__(self, request):
         cat_id = request.get('data').get('cat_id')
 
@@ -56,9 +63,11 @@ class ItemList:
                                                                          'category_name': category_name})
 
 
+@AppRoute('/create-item/')
 class ItemCreate:
     category_id = ''
 
+    @debug
     def __call__(self, request):
         if request['method'] == 'POST':
             data = request['data']
@@ -78,7 +87,9 @@ class ItemCreate:
             return '200 OK', render(template_name='create_item.html')
 
 
+@AppRoute('/copy-item/')
 class ItemCopy:
+    @debug
     def __call__(self, request):
         item_id = request.get('data').get('id')
         item = None
@@ -94,12 +105,7 @@ class ItemCopy:
                 'items': db.items,
                 'category_name': 'все'
             }
+
             logger.log(f'Item {item.title} copied.')
 
             return '200 OK', render(template_name='list_item.html', context=context)
-
-
-
-
-
-
