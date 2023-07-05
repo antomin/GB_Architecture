@@ -1,7 +1,6 @@
 from .requests_utils import get_get_params, get_post_params
-from .templator import render
 from .route import AppRoute
-from .utils import debug
+from .views import PageNotFound
 
 
 class Application:
@@ -33,28 +32,13 @@ class Application:
         else:
             view = PageNotFound()
 
+        request['context'] = {}
+
         for front in self.fronts:
-            front(request)
+            front(request['context'])
 
         code, body = view(request)
 
         start_response(code, [('Content-Type', 'text/html')])
 
         return [body.encode('utf-8')]
-
-
-class BaseView:
-    template_name = None
-    template_folder = 'templates'
-    extra_context = {}
-
-    @debug
-    def __call__(self, request):
-        context = {**request, **self.extra_context}
-        return '200 OK', render(self.template_name, folder=self.template_folder, context=context)
-
-
-class PageNotFound:
-    @debug
-    def __call__(self, request):
-        return '404 NOT FOUND', '<h1>Page not found</h1>'

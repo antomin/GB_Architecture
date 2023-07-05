@@ -1,5 +1,5 @@
-from .core import Application, BaseView
-from .templator import render
+from .core import Application
 from .route import AppRoute
+from .templator import render
 
-__all__ = ['Application', 'BaseView', 'AppRoute', 'render']
+__all__ = ['AppRoute', 'render', 'Application']

@@ -1,21 +1,22 @@
-from mindl_framework.utils import debug
+from mindl_framework import AppRoute, render
+from mindl_framework.views import BaseView, CreateView, ListView
+from patterns.behavioral import EmailNotifier, FileWriter, SMSNotifier
 from patterns.creation import Engine, Logger
-from mindl_framework import BaseView, AppRoute, render
 
 db = Engine()
-logger = Logger()
+logger = Logger('views', FileWriter())
+sms_notifier = SMSNotifier()
+email_notifier = EmailNotifier()
 
 
 @AppRoute('/')
 class Index(BaseView):
     template_name = 'index.html'
-    extra_context = {'title': 'Главная'}
 
 
 @AppRoute('/about/')
 class About(BaseView):
     template_name = 'about.html'
-    extra_context = {'title': 'О нас'}
 
 
 @AppRoute('/contact/')
@@ -24,50 +25,32 @@ class Contact(BaseView):
 
 
 @AppRoute('/categories/')
-class CategoryList(BaseView):
-    categories = db.categories
+class CategoryList(ListView):
     template_name = 'list_category.html'
-    extra_context = {'categories': categories}
+    queryset = db.categories
+    context_objects_name = 'categories'
 
 
 @AppRoute('/category/create/')
-class CategoryCreate:
-    @debug
-    def __call__(self, request):
-        if request['method'] == 'POST':
-            data = request['data']
-            name = data.get('name')
-            db.create_category(name=name)
-            logger.log(f'New category {name} added.')
-            return '200 OK', render(template_name='list_category.html', context={'categories': db.categories})
-        else:
-            context = {'title': 'Создать категорию'}
-            return '200 OK', render(template_name='create_category.html', context=context)
+class CategoryCreate(CreateView):
+    template_name = 'create_category.html'
+
+    def create_object(self, data):
+        name = data['name']
+        db.create_category(name=name)
 
 
 @AppRoute('/items/')
-class ItemList:
-    @debug
-    def __call__(self, request):
-        cat_id = request.get('data').get('cat_id')
-
-        if not cat_id:
-            items = db.items
-            category_name = 'все'
-        else:
-            category = db.get_category(int(cat_id))
-            category_name = category.name
-            items = category.items
-
-        return '200 OK', render(template_name='list_item.html', context={'items': items,
-                                                                         'category_name': category_name})
+class ItemList(ListView):
+    template_name = 'list_item.html'
+    queryset = db.items
+    context_objects_name = 'items'
 
 
 @AppRoute('/create-item/')
-class ItemCreate:
+class ItemCreate(CreateView):
     category_id = ''
 
-    @debug
     def __call__(self, request):
         if request['method'] == 'POST':
             data = request['data']
@@ -75,7 +58,10 @@ class ItemCreate:
             title = data['title']
             if self.category_id:
                 category = db.get_category(self.category_id)
-                db.create_item(_type=_type, title=title, category=category)
+                item = db.create_item(_type=_type, title=title, category=category)
+
+                item.observers += [sms_notifier, email_notifier]
+
                 logger.log(f'New item {title} added.')
                 return '200 OK', render(template_name='list_item.html', context={'items': category.items,
                                                                                  'category_name': category.name})
@@ -89,7 +75,6 @@ class ItemCreate:
 
 @AppRoute('/copy-item/')
 class ItemCopy:
-    @debug
     def __call__(self, request):
         item_id = request.get('data').get('id')
         item = None
@@ -109,3 +94,41 @@ class ItemCopy:
             logger.log(f'Item {item.title} copied.')
 
             return '200 OK', render(template_name='list_item.html', context=context)
+
+
+@AppRoute('/users/buyers/')
+class BuyerList(ListView):
+    template_name = 'list_user.html'
+    queryset = db.buyers
+    context_objects_name = 'users'
+
+
+@AppRoute('/users/sellers/')
+class BuyerList(ListView):
+    template_name = 'list_user.html'
+    queryset = db.sellers
+    context_objects_name = 'users'
+
+
+@AppRoute('/user/create/')
+class CreateUser(CreateView):
+    template_name = 'create_user.html'
+
+    def create_object(self, data):
+        _type = data['type']
+        name = data['name']
+        db.create_user(_type=_type, name=name)
+
+
+@AppRoute('/item/add-to-buyer/')
+class AddItemToBuyer(CreateView):
+    template_name = 'add_item_to_user.html'
+    extra_context = {
+        'items': db.items,
+        'buyers': db.buyers
+    }
+
+    def create_object(self, data):
+        item = db.get_item(int(data['item_id']))
+        buyer = db.get_buyer(data['buyer_name'])
+        item.add_buyer(buyer)
