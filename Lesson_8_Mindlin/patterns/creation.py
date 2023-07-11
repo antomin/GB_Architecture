@@ -2,7 +2,7 @@ from copy import deepcopy
 from datetime import datetime
 from sqlite3 import connect
 
-from Lesson_7_Mindlin.mindl_framework.exceptions import (ORMDeleteException,
+from Lesson_8_Mindlin.mindl_framework.exceptions import (ORMDeleteException,
                                                          ORMInsertException,
                                                          ORMRecordNotFound,
                                                          ORMUpdateException)
