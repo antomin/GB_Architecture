@@ -1,7 +1,14 @@
 from copy import deepcopy
 from datetime import datetime
+from sqlite3 import connect
+
+from Lesson_7_Mindlin.mindl_framework.exceptions import (ORMDeleteException,
+                                                         ORMInsertException,
+                                                         ORMRecordNotFound,
+                                                         ORMUpdateException)
 
 from .behavioral import FileWriter, Subject
+from .db_api import DomainObject
 
 
 class BaseUser:
@@ -9,7 +16,7 @@ class BaseUser:
         self.name = name
 
 
-class Buyer(BaseUser):
+class Buyer(BaseUser, DomainObject):
     def __init__(self, name):
         super().__init__(name)
         self.items = []
@@ -171,3 +178,83 @@ class Logger(metaclass=SingletonByName):
         text = f'LOG [{dt}] ---> {msg}'
         self.writer.write(text)
 
+
+connection = connect('db.sqlite')
+
+
+class RecordNotFound:
+    pass
+
+
+class BuyerMapper:
+    def __init__(self, _connection):
+        self.connection = _connection
+        self.cursor = _connection.cursor()
+        self.tablename = 'buyer'
+
+    def all(self):
+        statement = f'SELECT * FROM {self.tablename}'
+        self.cursor.execute(statement)
+        result = []
+        for item in self.cursor.fetchall():
+            _id, name = item
+            buyer = Buyer(name=name)
+            buyer.id = _id
+            result.append(buyer)
+
+        return result
+
+    def get_by_id(self, _id):
+        statement = f'SELECT * FROM {self.tablename} WHERE id = ?'
+        self.cursor.execute(statement, (_id,))
+        result = self.cursor.fetchone()
+        if result:
+            return Buyer(*result)
+        else:
+            raise ORMRecordNotFound(f'Record id={_id} not found in table {self.tablename}.')
+
+    def insert(self, obj):
+        statement = f'INSERT INTO {self.tablename} (name) VALUES (?)'
+        self.cursor.execute(statement, (obj.name,))
+        try:
+            self.connection.commit()
+        except Exception as error:
+            raise ORMInsertException(error.args)
+
+    def update(self, obj):
+        statement = f'UPDATE {self.tablename} SET name=? WHERE id=?'
+        self.cursor.execute(statement, (obj.name, obj.id))
+        try:
+            self.connection.commit()
+        except Exception as error:
+            raise ORMUpdateException(error.args)
+
+    def delete(self, obj):
+        statement = f'DELETE FROM {self.tablename} WHERE id=?'
+        self.cursor.execute(statement, (obj.id, ))
+        try:
+            self.connection.commit()
+        except Exception as error:
+            raise ORMDeleteException(error.args)
+
+
+class SellerMaper(BuyerMapper):
+    def __init__(self, _connection):
+        super().__init__(_connection)
+        self.tablename = 'seller'
+
+
+class MapperRegistry:
+    mappers = {
+        'buyer': BuyerMapper,
+        'seller': SellerMaper
+    }
+
+    @staticmethod
+    def get_mapper(obj):
+        if isinstance(obj, Buyer):
+            return BuyerMapper(connection)
+
+    @classmethod
+    def get_current_mapper(cls, _type):
+        return cls.mappers[_type](connection)

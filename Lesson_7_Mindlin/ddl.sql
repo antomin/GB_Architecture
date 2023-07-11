@@ -1,0 +1,31 @@
+PRAGMA foreign_keys = OFF;
+
+BEGIN TRANSACTION;
+
+DROP TABLE IF EXISTS buyer;
+CREATE TABLE buyer (
+    id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL UNIQUE,
+    name VARCHAR(32) UNIQUE
+    );
+
+INSERT INTO buyer (name) VALUES ('Ivan');
+INSERT INTO buyer (name) VALUES ('Petr');
+INSERT INTO buyer (name) VALUES ('Sidr');
+
+COMMIT TRANSACTION;
+
+BEGIN TRANSACTION;
+
+DROP TABLE IF EXISTS seller;
+CREATE TABLE seller (
+    id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL UNIQUE,
+    name VARCHAR(32) UNIQUE
+    );
+
+INSERT INTO seller (name) VALUES ('Tatiana');
+INSERT INTO seller (name) VALUES ('Darya');
+INSERT INTO seller (name) VALUES ('Maria');
+
+COMMIT TRANSACTION;
+
+PRAGMA foreign_keys = ON;

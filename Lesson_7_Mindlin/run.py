@@ -1,6 +1,7 @@
 from wsgiref.simple_server import make_server
 
 import views
+from create_db import create_db
 from mindl_framework import Application
 from urls import fronts
 

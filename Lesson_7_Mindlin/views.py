@@ -1,12 +1,15 @@
 from mindl_framework import AppRoute, render
 from mindl_framework.views import BaseView, CreateView, ListView
 from patterns.behavioral import EmailNotifier, FileWriter, SMSNotifier
-from patterns.creation import Engine, Logger
+from patterns.creation import Engine, Logger, MapperRegistry, UserFactory
+from patterns.db_api import UnitOfWork
 
 db = Engine()
 logger = Logger('views', FileWriter())
 sms_notifier = SMSNotifier()
 email_notifier = EmailNotifier()
+UnitOfWork.new_current()
+UnitOfWork.get_current().set_mapper_registry(MapperRegistry)
 
 
 @AppRoute('/')
@@ -99,14 +102,16 @@ class ItemCopy:
 @AppRoute('/users/buyers/')
 class BuyerList(ListView):
     template_name = 'list_user.html'
-    queryset = db.buyers
+    mapper = MapperRegistry.get_current_mapper('buyer')
+    queryset = mapper.all()
     context_objects_name = 'users'
 
 
 @AppRoute('/users/sellers/')
-class BuyerList(ListView):
+class SellerList(ListView):
     template_name = 'list_user.html'
-    queryset = db.sellers
+    mapper = MapperRegistry.get_current_mapper('seller')
+    queryset = mapper.all()
     context_objects_name = 'users'
 
 
@@ -117,7 +122,9 @@ class CreateUser(CreateView):
     def create_object(self, data):
         _type = data['type']
         name = data['name']
-        db.create_user(_type=_type, name=name)
+        new_user = UserFactory.create(_type=_type, name=name)
+        mapper = MapperRegistry.get_current_mapper(_type)
+        mapper.insert(new_user)
 
 
 @AppRoute('/item/add-to-buyer/')
