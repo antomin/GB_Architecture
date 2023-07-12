@@ -15,7 +15,7 @@ def sale_view(request, pk):
         'phone': f'{phone.brand.name} {phone.name}',
         'price': phone.sale_cost
     }
-    requests.post('http://127.0.0.1:5000/sale/', data=data)
+    requests.post('http://orders:5000/sale/', data=data)
     return HttpResponseRedirect('/')
 
 
@@ -25,5 +25,5 @@ def repair_view(request, pk):
         'phone': f'{phone.brand.name} {phone.name}',
         'price': phone.repair_cost
     }
-    requests.post('http://127.0.0.1:5000/repair/', data=data)
+    requests.post('http://orders:5000/repair/', data=data)
     return HttpResponseRedirect('/')

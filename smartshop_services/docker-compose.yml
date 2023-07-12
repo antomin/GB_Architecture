@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  sales_django:
+    build: ./step1_sales_django/.
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./step1_sales_django/.:/app/
+    ports:
+      - '8000:8000'
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15.3
+    environment:
+      - "POSTGRES_HOST_AUTH_METHOD=trust"
+      - "POSTGRES_DB=smartshop"
+      - "POSTGRES_USER=smartshop_user"
+      - "POSTGRES_PASSWORD=smartshop_pass"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  orders:
+    build: ./step2_orders_flask/.
+    command: python main.py
+    volumes:
+      - ./step2_orders_flask/.:/app/
+    ports:
+      - '5000:5000'
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:6.0.20
+    command: redis-server
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./cache:/data
+
+  repair:
+    build: ./step3_rapair_rabbit/.
+    command: python main.py
+    depends_on:
+      - redis
+
+volumes:
+  data:
+  cache:

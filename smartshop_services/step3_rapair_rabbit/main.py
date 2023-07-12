@@ -1,27 +1,14 @@
-import pika
 import random
 import time
-import requests
+import redis
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-channel = connection.channel()
-channel.queue_declare(queue='repair')
+while True:
+    with redis.Redis(host='redis', port=6379, decode_responses=True) as redis_client:
+        print('Queue waiting...')
+        phone = redis_client.brpop(['repair'])
+        repair_time = random.randint(3, 20)
+        print('rep_time', repair_time)
+        time.sleep(repair_time)
+        print('Work is done!')
 
-
-def callback(ch, method, properties, body):
-    """
-    Обработка чтения из очереди
-    """
-    phone = body
-    # Начинаем процедуру ремонта
-    repair_time = random.randint(3, 40)
-    time.sleep(repair_time)
-    # После окончания отправляем запрос на обновление статуса заказа
-    requests.post('http://127.0.0.1:5000/change/',
-                  data={'phone': phone, 'status': 'DONE'})
-
-
-channel.basic_consume(queue='repair', on_message_callback=callback)
-
-print('start')
-channel.start_consuming()
+        requests.post('http://orders:5000/change/', data={'phone': phone[1], 'status': 'DONE'})

@@ -1,6 +1,7 @@
 from flask import Flask, json, request
 import sqlite3
-import pika
+# import pika
+import redis
 from settings import TABLE_NAME, DB_NAME
 
 app = Flask(__name__)
@@ -52,14 +53,18 @@ def repair():
     cursor.execute(statement, (phone, price, is_sale, status))
 
     # Публикуем сообщение
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        'localhost'))
-    channel = connection.channel()
-    channel.queue_declare(queue='repair')
-    channel.basic_publish(exchange='',
-                          routing_key='repair',
-                          body=phone)
-    connection.close()
+
+    with redis.Redis(host='redis', port=6379, decode_responses=True) as redis_client:
+        redis_client.lpush('repair', phone)
+
+    # connection = pika.BlockingConnection(pika.ConnectionParameters(
+    #     'localhost'))
+    # channel = connection.channel()
+    # channel.queue_declare(queue='repair')
+    # channel.basic_publish(exchange='',
+    #                       routing_key='repair',
+    #                       body=phone)
+    # connection.close()
 
     response = app.response_class(
         response=json.dumps({'STATUS': 'OK'}),
@@ -87,4 +92,4 @@ def change_status():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
